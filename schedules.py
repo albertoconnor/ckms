@@ -62,15 +62,29 @@ def transform_downloaded_schedule(downloaded_schedule_text):
 
 def write_schedule(schedule):
     filename = "{}.json".format(schedule[0]['key'])
+    path = os.path.join('schedules', filename)
     content = json.dumps(schedule)
-    with open(os.path.join('schedules', filename), 'w') as f:
+    with open(path, 'w') as f:
         f.write(content)
+
+    return filename
+
+
+def read_schedule(filename):
+    with open(os.path.join('schedules', filename), 'r') as f:
+        schedule = json.loads(f.read())
+
+    return schedule
 
 
 if __name__ == '__main__':
-    with open('schedule.json', 'r') as f:
+    with open('schedule_apr_2018.json', 'r') as f:
         test_schedule = f.read()
 
     schedule = transform_downloaded_schedule(test_schedule)
 
-    write_schedule(schedule)
+    path = write_schedule(schedule)
+
+    read_schedule = read_schedule(path)
+
+    assert read_schedule == schedule
