@@ -37,9 +37,13 @@ def transform_downloaded_blob(downloaded_blob):
     }
     '''
     start = parse(downloaded_blob['start_timestamp'])
-    key = time_to_key(start)
+    start_key = time_to_key(start)
+    end = parse(downloaded_blob['end_timestamp'])
+    end_key = time_to_key(end)
+    downloaded_blob['start_key'] = start_key
+    downloaded_blob['end_key'] = end_key
     return {
-        'key': key,
+        'key': start_key,
         'details': downloaded_blob,
     }
 
