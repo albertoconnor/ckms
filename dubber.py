@@ -163,7 +163,7 @@ def dub_show(show, edits):
 def edit_to_split(edit):
     filename, start, end = edit
     return(
-        filename,
+        os.path.join('test_data', filename),
         '{}.0'.format(start),
         '{}.0'.format(end),
     )
@@ -187,9 +187,18 @@ def mp3split(split, output_path):
 
 
 def do_split(show, edits):
-    dirname = '{name}-{instace_id}'.format(**show)
+    name = show['details']['name'].replace(' ', '_')
+    instance_id = show['details']['instance_id']
+    dirname = '{name}-{instance_id}'.format(
+        name=name,
+        instance_id=instance_id
+    )
+
     output_path = os.path.join('output', dirname)
-    os.makedirs(output_path)
+    try:
+        os.makedirs(output_path)
+    except FileExistsError:
+        pass
 
     for edit in edits:
         filename, start, end = edit
@@ -205,10 +214,48 @@ def do_split(show, edits):
     return output_path
 
 
+def mp3cat(directory_path, output_filename):
+    '''
+    Requires mp3cat to be installed on the local path
+    https://github.com/dmulholland/mp3cat
+    '''
+    ret = subprocess.call(
+        'mp3cat -d {} -o {}'.format(
+            directory_path,
+            output_filename,
+        ),
+        shell=True
+    )
+
+    if ret != 0:
+        print('Unexpected error while joining.')
+
+
+def do_join(show, split_directory):
+    name = show['details']['name'].replace(' ', '_')
+    instance_id = show['details']['instance_id']
+    output_filename = '{name}-{instance_id}.mp3'.format(
+        name=name,
+        instance_id=instance_id
+    )
+    output_filename = os.path.join('output', output_filename)
+
+    filenames = os.listdir(split_directory)
+    if len(filenames) == 1:
+        shutil.copy(
+            os.path.join(split_directory, filenames[0]),
+            output_filename,
+        )
+    else:
+        mp3cat(split_directory, output_filename)
+
+    return output_filename
+
+
 if __name__ == '__main__':
-    schedule = read_schedule('2018-04-02T00-00.json')
-    shows_and_edits = shows_and_edits_from_schedule(schedule)
-    print(shows_and_edits)
+    #schedule = read_schedule('2018-04-02T00-00.json')
+    #shows_and_edits = shows_and_edits_from_schedule(schedule)
+    #print(shows_and_edits)
 
     test_show_and_edits = [(
         {'key': '2018-04-03T16-00', 'details': {'instance_id': 28511, 'name': 'Mazaj Show', 'start_key': '2018-04-03T16-00', 'end_key': '2018-04-03T19-30'}},
@@ -217,3 +264,7 @@ if __name__ == '__main__':
             ('dump_end_Apr03_2018_20_00.mp3', 0, 90),
         ]
     )]
+
+    for show, edits in test_show_and_edits:
+        split_directory = do_split(show, edits)
+        print(do_join(show, split_directory))

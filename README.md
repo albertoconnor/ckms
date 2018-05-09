@@ -1,4 +1,13 @@
-CKMS Project
+# CKMS Project
+
+## `dubber.py`
+
+Given schedule and recorded show data, calculate edits required to
+create an mp3 file per show.
+
+Requires `mp3splt` and `mp3cat` to be accessible on the path.
+
+## notes
 
 Automatic podcast for those who want it.
 Delay of 2 hour ok while files get written
