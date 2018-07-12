@@ -142,13 +142,15 @@ def edit_to_split(edit, record_path):
 def mp3split(split, output_path):
     filename, start, end = split
 
+    command = 'mp3splt -Q -d {} {} {} {}'.format(
+        output_path,
+        filename,
+        start,
+        end,
+    )
+    print('+ ' + command)
     ret = subprocess.call(
-        'mp3splt -q -d {} {} {} {}'.format(
-            output_path,
-            filename,
-            start,
-            end,
-        ),
+        command,
         shell=True
     )
 
@@ -189,11 +191,13 @@ def mp3cat(directory_path, output_filename):
     Requires mp3cat to be installed on the local path
     https://github.com/dmulholland/mp3cat
     '''
+    command = 'mp3cat -d {} -o {}'.format(
+        directory_path,
+        output_filename,
+    )
+    print('+ ' + command)
     ret = subprocess.call(
-        'mp3cat -d {} -o {}'.format(
-            directory_path,
-            output_filename,
-        ),
+        command,
         shell=True
     )
 
