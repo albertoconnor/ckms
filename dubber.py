@@ -3,8 +3,6 @@ import datetime
 import shutil
 import subprocess
 
-from pydub import AudioSegment
-
 from schedules import time_to_key, key_to_datetime, read_schedule
 
 
@@ -98,6 +96,12 @@ def edits_from_show(show, audio_index):
     return edits
 
 
+def exclude_show(show):
+    if show['details']['name'].endswith('*'):
+        return True
+    return False
+
+
 def shows_and_edits_from_schedule(schedule):
     '''
     Given the schedule output what edits would be need to edit out every
@@ -116,47 +120,12 @@ def shows_and_edits_from_schedule(schedule):
     ret = []  # (show, edits)
 
     for item in overlap:
+        if exclude_show(item):
+            continue
         edits = edits_from_show(item, audio_index)
         ret.append((item, edits))
 
     return ret
-
-
-# pydubber implementation
-def simple_loader(filename):
-    return AudioSegment.from_mp3(filename)
-
-
-def minutes_to_microseconds(minute):
-    return minute * 60 * 1000
-
-
-def dub_edits(edits, segments_loader):
-    output_seg = None
-    for edit in edits:
-        source_seg = segments_loader(edit['filename'])
-        start, end = edit.get('start'), edit.get('end')
-
-        if start is None and end is None:
-            cut_seg = source_seg
-        elif end is None:
-            cut_seg = source_seg[start:]
-        elif start is None:
-            cut_seg = source_seg[:end]
-        else:
-            cut_seg = source_seg[start:end]
-
-        if output_seg is None:
-            output_seg = cut_seg
-        else:
-            output_seg += cut_seg
-
-    return output_seg
-
-
-def dub_show(show, edits):
-    output = dub_edits(edits, simple_loader)
-    output.export(f'output/{show.name}.mp3')
 
 
 # mp3split implementation
@@ -253,9 +222,9 @@ def do_join(show, split_directory):
 
 
 if __name__ == '__main__':
-    #schedule = read_schedule('2018-04-02T00-00.json')
-    #shows_and_edits = shows_and_edits_from_schedule(schedule)
-    #print(shows_and_edits)
+    schedule = read_schedule('2018-04-02T00-00.json')
+    shows_and_edits = shows_and_edits_from_schedule(schedule)
+    print(shows_and_edits)
 
     test_show_and_edits = [(
         {'key': '2018-04-03T16-00', 'details': {'instance_id': 28511, 'name': 'Mazaj Show', 'start_key': '2018-04-03T16-00', 'end_key': '2018-04-03T19-30'}},
@@ -265,6 +234,6 @@ if __name__ == '__main__':
         ]
     )]
 
-    for show, edits in test_show_and_edits:
-        split_directory = do_split(show, edits)
-        print(do_join(show, split_directory))
+    #for show, edits in test_show_and_edits:
+    #    split_directory = do_split(show, edits)
+    #    print(do_join(show, split_directory))
