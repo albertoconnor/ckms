@@ -143,7 +143,7 @@ def mp3split(split, output_path):
     filename, start, end = split
 
     ret = subprocess.call(
-        'mp3splt -d {} {} {} {}'.format(
+        'mp3splt -q -d {} {} {} {}'.format(
             output_path,
             filename,
             start,
