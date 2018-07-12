@@ -130,10 +130,10 @@ def shows_and_edits_from_schedule(schedule, record_path):
 
 
 # mp3split implementation
-def edit_to_split(edit):
+def edit_to_split(edit, record_path):
     filename, start, end = edit
     return(
-        os.path.join('test_data', filename),
+        os.path.join(record_path, filename),
         '{}.0'.format(start),
         '{}.0'.format(end),
     )
@@ -156,7 +156,7 @@ def mp3split(split, output_path):
         print('Unexpected error while spliting.')
 
 
-def do_split(show, edits):
+def do_split(show, edits, record_path):
     name = show['details']['name'].replace(' ', '_')
     instance_id = show['details']['instance_id']
     dirname = '{name}-{instance_id}'.format(
@@ -174,11 +174,11 @@ def do_split(show, edits):
         filename, start, end = edit
         if start == 0 and end == 120:
             shutil.copy(
-                os.path.join('test_data', filename),
+                os.path.join(record_path, filename),
                 os.path.join(output_path, filename)
             )
         else:
-            split = edit_to_split(edit)
+            split = edit_to_split(edit, record_path)
             mp3split(split, output_path)
 
     return output_path
@@ -227,16 +227,7 @@ if __name__ == '__main__':
 
     schedule = read_schedule(schedule_name)
     shows_and_edits = shows_and_edits_from_schedule(schedule, record_path)
-    print(shows_and_edits)
 
-    test_show_and_edits = [(
-        {'key': '2018-04-03T16-00', 'details': {'instance_id': 28511, 'name': 'Mazaj Show', 'start_key': '2018-04-03T16-00', 'end_key': '2018-04-03T19-30'}},
-        [
-            ('dump_end_Apr03_2018_18_00.mp3', 0, 120),
-            ('dump_end_Apr03_2018_20_00.mp3', 0, 90),
-        ]
-    )]
-
-    #for show, edits in test_show_and_edits:
-    #    split_directory = do_split(show, edits)
-    #    print(do_join(show, split_directory))
+    for show, edits in shows_and_edits:
+        split_directory = do_split(show, edits, record_path)
+        print(do_join(show, split_directory))
