@@ -167,7 +167,7 @@ def do_split(show, edits, record_path):
     output_path = os.path.join('output', dirname)
     try:
         os.makedirs(output_path)
-    except FileExistsError:
+    except OSError:
         pass
 
     for edit in edits:
