@@ -2,6 +2,7 @@ import os
 import datetime
 import shutil
 import subprocess
+import sys
 
 from schedules import time_to_key, key_to_datetime, read_schedule
 
@@ -9,7 +10,7 @@ from schedules import time_to_key, key_to_datetime, read_schedule
 def index_from_filelist(filelist):
     index = []  # (start_key, end_key, filename)
     for filename in filelist:
-        if filename.startswith('.'):
+        if filename.startswith('.') or 'dump_end_' not in filename:
             continue
 
         name, ext = filename.rsplit('.', 1)
@@ -102,12 +103,12 @@ def exclude_show(show):
     return False
 
 
-def shows_and_edits_from_schedule(schedule):
+def shows_and_edits_from_schedule(schedule, record_path):
     '''
     Given the schedule output what edits would be need to edit out every
     show
     '''
-    audio_files = os.listdir('test_data')
+    audio_files = os.listdir(record_path)
     audio_index = index_from_filelist(audio_files)
     extent_start, extent_end = extent_from_index(audio_index)
 
@@ -222,8 +223,10 @@ def do_join(show, split_directory):
 
 
 if __name__ == '__main__':
-    schedule = read_schedule('2018-04-02T00-00.json')
-    shows_and_edits = shows_and_edits_from_schedule(schedule)
+    _, schedule_name, record_path = sys.argv
+
+    schedule = read_schedule(schedule_name)
+    shows_and_edits = shows_and_edits_from_schedule(schedule, record_path)
     print(shows_and_edits)
 
     test_show_and_edits = [(
