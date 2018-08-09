@@ -4,7 +4,10 @@ import shutil
 import subprocess
 import sys
 
+from mutagen.easyid3 import EasyID3
+
 from schedules import time_to_key, key_to_datetime, read_schedule
+from show_info import generate_tags
 
 
 def index_from_filelist(filelist):
@@ -226,6 +229,17 @@ def do_join(show, split_directory):
     return output_filename
 
 
+def tag_show(show, filename):
+    tag_data = generate_tags(show)
+    if tag_data is None:
+        return
+
+    audio = EasyID3("example.mp3")
+    for key in tag_data:
+        audio[key] = tag_data[key]
+    audio.save()
+
+
 if __name__ == '__main__':
     _, schedule_name, record_path = sys.argv
 
@@ -234,4 +248,6 @@ if __name__ == '__main__':
 
     for show, edits in shows_and_edits:
         split_directory = do_split(show, edits, record_path)
-        print(do_join(show, split_directory))
+        filename = do_join(show, split_directory)
+        tag_show(show, filename)
+        print(filename)
