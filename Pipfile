@@ -11,6 +11,8 @@ pydub = "*"
 pytest = "*"
 python-dateutil = "*"
 mutagen = "*"
+"bs4" = "*"
+requests = "*"
 
 
 [dev-packages]
