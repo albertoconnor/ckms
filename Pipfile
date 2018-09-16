@@ -13,6 +13,7 @@ python-dateutil = "*"
 mutagen = "*"
 "bs4" = "*"
 requests = "*"
+click = "*"
 
 
 [dev-packages]

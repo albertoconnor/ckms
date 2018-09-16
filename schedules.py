@@ -4,13 +4,7 @@ import datetime
 
 from dateutil.parser import parse
 
-
-class Show:
-    def __init__(self, name, show_id, start_time, end_time):
-        self.name = name
-        self.show_id = show_id
-        self.start_time = start_time
-        self.end_time = end_time
+import requests
 
 
 def time_to_key(time):
@@ -19,6 +13,10 @@ def time_to_key(time):
 
 def key_to_datetime(key):
     return datetime.datetime.strptime(key, '%Y-%m-%dT%H-%M')
+
+
+def download_schedule(url):
+    return requests.get(url).json()
 
 
 def transform_downloaded_blob(downloaded_blob):
@@ -64,9 +62,9 @@ def transform_downloaded_schedule(downloaded_schedule_text):
     return sorted(new_schedule, key=lambda d: d['key'])
 
 
-def write_schedule(schedule):
+def write_schedule(schedule, schedule_path='schedules'):
     filename = "{}.json".format(schedule[0]['key'])
-    path = os.path.join('schedules', filename)
+    path = os.path.join(schedule_path, filename)
     content = json.dumps(schedule)
     with open(path, 'w') as f:
         f.write(content)
@@ -74,11 +72,51 @@ def write_schedule(schedule):
     return filename
 
 
+def earliest_start(schedule):
+    ret = None
+    for item in schedule:
+        start = item['details']['start_key']
+        if ret is None or start < ret:
+            ret = start
+    return ret
+
+
 def read_schedule(filename):
     with open(os.path.join('schedules', filename), 'r') as f:
         schedule = json.loads(f.read())
 
     return schedule
+
+
+def read_all_schedules(schedule_path=None):
+    if schedule_path is None:
+        schedule_path = 'schedules'
+
+    schedules = {}
+
+    for filename in os.listdir(schedule_path):
+        if not filename.endswith('.json'):
+            continue
+
+        path = os.path.join(schedule_path, filename)
+        if not os.isfile(path):  # is dir
+            continue
+
+        with open(path, 'r') as f:
+            schedule = json.loads(f.read())
+
+        start = earliest_start(schedule)
+
+        schedules[(start, path)] = schedule
+
+    return sorted(schedules)
+
+
+def join_schedules(schedule_list):
+    ret = []
+    for schedule in schedule_list:
+        ret += schedule
+    return ret
 
 
 if __name__ == '__main__':

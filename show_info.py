@@ -42,7 +42,9 @@ def generate_tags(show):
 
 
 if __name__ == "__main__":
-    response = requests.get('http://radiowaterloo.ca/schedule/about-our-shows/')
+    response = requests.get(
+        'http://radiowaterloo.ca/schedule/about-our-shows/'
+    )
     soup = BeautifulSoup(response.content, features="html.parser")
 
     urls = [

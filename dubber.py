@@ -54,6 +54,7 @@ def overlap_from_schedule_and_extents(schedule, start, end):
     '''
     overlap = []
     for item in schedule:
+        # I don't think order matters, either it overlaps or it doesn't
         item_start, item_end = extent_from_schedule_item(item)
         if not (item_end <= start or item_start >= end):
             overlap.append(item)
@@ -238,6 +239,13 @@ def tag_show(show, filename):
     for key in tag_data:
         audio[key] = tag_data[key]
     audio.save()
+
+
+def dub_show(show, edits):
+    split_directory = do_split(show, edits, record_path)
+    filename = do_join(show, split_directory)
+    tag_show(show, filename)
+    return filename
 
 
 if __name__ == '__main__':
