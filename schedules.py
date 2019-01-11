@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+from collections import OrderedDict
 
 from dateutil.parser import parse
 
@@ -46,9 +47,7 @@ def transform_downloaded_blob(downloaded_blob):
     }
 
 
-def transform_downloaded_schedule(downloaded_schedule_text):
-    downloaded_schedule = json.loads(downloaded_schedule_text)
-
+def transform_downloaded_schedule(downloaded_schedule):
     # {"key": "2018-04-01T22:30", "details": {...}} sorted by key
     new_schedule = []
     for key, day_list in downloaded_schedule.items():
@@ -75,7 +74,7 @@ def write_schedule(schedule, schedule_path='schedules'):
 def earliest_start(schedule):
     ret = None
     for item in schedule:
-        start = item['details']['start_key']
+        start = item['key']
         if ret is None or start < ret:
             ret = start
     return ret
@@ -92,14 +91,14 @@ def read_all_schedules(schedule_path=None):
     if schedule_path is None:
         schedule_path = 'schedules'
 
-    schedules = {}
+    schedules = OrderedDict()
 
     for filename in os.listdir(schedule_path):
         if not filename.endswith('.json'):
             continue
 
         path = os.path.join(schedule_path, filename)
-        if not os.isfile(path):  # is dir
+        if not os.path.isfile(path):  # is dir
             continue
 
         with open(path, 'r') as f:
@@ -109,7 +108,7 @@ def read_all_schedules(schedule_path=None):
 
         schedules[(start, path)] = schedule
 
-    return sorted(schedules)
+    return schedules
 
 
 def join_schedules(schedule_list):

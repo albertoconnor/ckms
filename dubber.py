@@ -241,10 +241,10 @@ def tag_show(show, filename):
     audio.save()
 
 
-def dub_show(show, edits):
+def dub_show(show, edits, record_path):
     split_directory = do_split(show, edits, record_path)
     filename = do_join(show, split_directory)
-    tag_show(show, filename)
+    # tag_show(show, filename)
     return filename
 
 

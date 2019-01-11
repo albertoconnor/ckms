@@ -2,13 +2,13 @@ import os
 import json
 
 import click
-from raven import Client
+import sentry_sdk
 
-from . import schedules
-from . import dubber
+import schedules
+import dubber
 
 
-sentry_client = Client('https://<key>:<secret>@sentry.io/<project>')
+sentry_sdk.init("https://dc5cab9a48f84900a9decb152a64cfb2@sentry.io/1369605")
 
 
 @click.command()
@@ -24,8 +24,7 @@ sentry_client = Client('https://<key>:<secret>@sentry.io/<project>')
 @click.option('--schedule-path', default='schedules')
 @click.option('--history_path', default='history.json')
 def cli(record_path, schedule_url, schedule_path, history_path):
-    global sentry_client
-    current_schedule = schedules.downloaded_schedule(schedule_url)
+    current_schedule = schedules.download_schedule(schedule_url)
     schedule = schedules.transform_downloaded_schedule(current_schedule)
     schedules.write_schedule(schedule, schedule_path)
 
@@ -33,17 +32,17 @@ def cli(record_path, schedule_url, schedule_path, history_path):
 
     history = {}
 
-    if os.is_file(history_path):
+    if os.path.isfile(history_path):
         with open(history_path, 'r') as f:
             history = json.loads(f.read())
 
-    if len(schedules_dict) > 2:
-        sentry_client.context.merge(dict(
-            schedules_dict=schedules_dict,
-        ))
-        sentry_client.captureMessage('More than 3 schedules found')
-        sentry_client.context.clear()
-        # delete on of them, but which one? logging will tell us
+    print(schedules_dict.keys())
+    if len(schedules_dict.keys()) > 2:
+        first_key = schedules_dict.keys()[0]
+        start_key, path = first_key
+        sentry_sdk.capture_message('Deleteing schedule file {}'.format(path))
+        os.remove(path) # the underlying schedule file
+        del schedules_dict[first_key]
 
     schedules_list = [schedules_dict[key] for key in schedules_dict]
 
@@ -56,29 +55,26 @@ def cli(record_path, schedule_url, schedule_path, history_path):
 
     shows_written = []
     for show, edits in shows_and_edits:
-        if show in history:
+        if show['key'] in history:
             continue
-        filename = dubber.dub_show(show, edits)
+        filename = dubber.dub_show(show, edits, record_path)
         shows_written.append(filename)
-        history[show] = dict(filename=filename)
+        history[show['key']] = dict(show=show, flename=filename)
 
     history_json = json.dumps(history)
     with open(history_path, 'w') as f:
         f.write(history_json)
 
-    sentry_client.context.merge(dict(
-        shows_written=shows_written,
-        history=history,
-    ))
-    sentry_client.captureMessage('Dubber run completed')
-    sentry_client.context.clear()
-
+    with sentry_sdk.configure_scope() as scope:
+        scope.set_extra('shows_written', shows_written)
+        scope.set_extra('history', history)
+        sentry_sdk.capture_message('Dubber run completed')
     # Eventually tag, upload, and produce podcast feed...
 
 
 if __name__ == '__main__':
-    global sentry_client
     try:
         cli()
-    except Exception:
-        sentry_client.captureException()
+    except Exception as e:
+        sentry_sdk.capture_exception(e)
+        raise e
