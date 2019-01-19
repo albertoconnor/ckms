@@ -15,6 +15,7 @@ mutagen = "*"
 requests = "*"
 click = "*"
 sentry-sdk = "*"
+python-dotenv = "*"
 
 
 [dev-packages]
