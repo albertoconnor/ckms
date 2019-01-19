@@ -13,6 +13,9 @@ python-dateutil = "*"
 mutagen = "*"
 "bs4" = "*"
 requests = "*"
+click = "*"
+sentry-sdk = "*"
+python-dotenv = "*"
 
 
 [dev-packages]
