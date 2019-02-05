@@ -61,7 +61,7 @@ def cli(record_path, schedule_url, schedule_path, history_path):
             history = json.loads(f.read())
 
     if len(schedules_dict.keys()) > 2:
-        first_key = schedules_dict.keys()[0]
+        first_key = sorted(schedules_dict.keys())[0]
         start_key, path = first_key
         sentry_sdk.capture_message('Deleteing schedule file {}'.format(path))
         os.remove(path)  # the underlying schedule file
