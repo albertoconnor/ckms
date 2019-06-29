@@ -235,7 +235,7 @@ def tag_show(show, filename):
     if tag_data is None:
         return
 
-    audio = EasyID3("example.mp3")
+    audio = EasyID3(filename)
     for key in tag_data:
         audio[key] = tag_data[key]
     audio.save()
@@ -244,7 +244,7 @@ def tag_show(show, filename):
 def dub_show(show, edits, record_path):
     split_directory = do_split(show, edits, record_path)
     filename = do_join(show, split_directory)
-    # tag_show(show, filename)
+    tag_show(show, filename)
     return filename
 
 

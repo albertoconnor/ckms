@@ -44,7 +44,7 @@ def trim_history(history):
         readable=True,
     )
 )
-@click.option('--schedule-url', default='http://192.168.2.151/api/week-info/')
+@click.option('--schedule-url', default='https://radiowaterloo.ca/wp-content/uploads/week-info.json')
 @click.option('--schedule-path', default='schedules')
 @click.option('--history_path', default='history.json')
 def cli(record_path, schedule_url, schedule_path, history_path):
@@ -94,7 +94,6 @@ def cli(record_path, schedule_url, schedule_path, history_path):
         scope.set_extra('shows_written', shows_written)
         scope.set_extra('history', history)
         sentry_sdk.capture_message('Dubber run completed')
-    # Eventually tag, upload, and produce podcast feed...
 
 
 if __name__ == '__main__':

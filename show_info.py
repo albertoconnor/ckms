@@ -1,3 +1,5 @@
+import re
+import unicodedata
 
 import requests
 from bs4 import BeautifulSoup
@@ -18,8 +20,35 @@ def show_info_from_url(url):
     return info
 
 
+def slugify(value):
+    """
+    Converts to lowercase, removes non-word characters (alphanumerics and
+    underscores) and converts spaces to hyphens. Also strips leading and
+    trailing whitespace.
+    """
+    value = (
+        unicodedata.normalize('NFKD', value)
+        .encode('ascii', 'ignore')
+        .decode('ascii')
+    )
+    value = re.sub('[^\w\s-]', '', value).strip().lower()
+    return re.sub('[-\s]+', '-', value)
+
+
+bracket_tag_re = re.compile(r'\(.*\)')
+
+
+def show_url_from_name(name):
+    # Remove stuff in brackets eg. "(syndicated)", "(repeat)"
+    name = re.sub(bracket_tag_re, '', name)
+
+    slug_name = slugify(name)
+
+    return 'https://radiowaterloo.ca/category/{}/?tag=about'.format(slug_name)
+
+
 def generate_tags(show):
-    url = show['url']
+    url = show_url_from_name(show['name'])
     if not url:
         return None
 
