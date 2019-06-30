@@ -1,5 +1,6 @@
 import datetime
 import os
+import shutil
 import json
 
 import click
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 
 import schedules
 import dubber
+from shows_info import show_slug_from_name
 
 
 load_dotenv(dotenv_path='.env', verbose=True)
@@ -47,7 +49,8 @@ def trim_history(history):
 @click.option('--schedule-url', default='http://192.168.2.151/api/week-info/')
 @click.option('--schedule-path', default='schedules')
 @click.option('--history_path', default='history.json')
-def cli(record_path, schedule_url, schedule_path, history_path):
+@click.option('--feed_path', default='/media/ckms0t/AmazonS3/show-feeds/')
+def cli(record_path, schedule_url, schedule_path, history_path, feed_path):
     current_schedule = schedules.download_schedule(schedule_url)
     schedule = schedules.transform_downloaded_schedule(current_schedule)
     schedules.write_schedule(schedule, schedule_path)
@@ -83,6 +86,16 @@ def cli(record_path, schedule_url, schedule_path, history_path):
         filename = dubber.dub_show(show, edits, record_path)
         shows_written.append(filename)
         history[show['key']] = dict(show=show, flename=filename)
+
+        show_slug = show_slug_from_name(show['details']['name'])
+        show_feed_path = os.path.join(feed_path, show_slug)
+        if not os.path.exist(show_feed_path):
+            os.makedirs(show_feed_path)
+
+        shutil.copy(
+            filename,
+            show_feed_path
+        )
 
     history = trim_history(history)
 

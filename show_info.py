@@ -1,3 +1,4 @@
+from email.utils import formatdate
 import re
 import unicodedata
 
@@ -40,13 +41,27 @@ def slugify(value):
 bracket_tag_re = re.compile(r'\(.*\)')
 
 
-def show_url_from_name(name):
-    # Remove stuff in brackets eg. "(syndicated)", "(repeat)"
+def show_slug_from_name(name):
     name = re.sub(bracket_tag_re, '', name)
-
     slug_name = slugify(name)
 
+    return slug_name
+
+
+def show_url_from_name(name):
+    slug_name = show_url_from_name(name)
     return 'https://radiowaterloo.ca/category/{}/?tag=about'.format(slug_name)
+
+
+def start_to_pub_date(starts):
+    '''
+    source is like 2019-06-24 05:00:00 but we
+    need Thu, 21 Dec 2016 16:01:07 +0000
+    '''
+
+    show_date = key_to_datetime(starts)
+
+    return formatdate(float(show_date.strftime('%s')))
 
 
 def generate_tags(show):
@@ -62,11 +77,16 @@ def generate_tags(show):
         show_date.strftime('%B %d %Y')
     )
 
+    pub_date = start_to_pub_date(show['details']['starts'])
+
+    comment = '{}@@{}'.format(url, pub_date)
+
     tags = {
         'album': info['title'],
         'artist': info['artist'],
         'title': show_title,
         'date': show_date.strftime('%Y'),
+        'comment': comment,
     }
 
     return tags
