@@ -9,8 +9,10 @@ from schedules import key_to_datetime
 
 def show_info_from_url(url):
     info = {}
+    print('request GET {}'.format(url))
     response = requests.get(url)
     if response.status_code != 200:
+        print('request GET {} failed {}'.format(url, response.status_code))
         return info
 
     soup = BeautifulSoup(response.content, features="html.parser")

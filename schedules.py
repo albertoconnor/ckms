@@ -17,6 +17,7 @@ def key_to_datetime(key):
 
 
 def download_schedule(url):
+    print('request GET {}'.format(url))
     return requests.get(url).json()
 
 
