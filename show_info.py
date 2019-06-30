@@ -48,7 +48,7 @@ def show_url_from_name(name):
 
 
 def generate_tags(show):
-    url = show_url_from_name(show['name'])
+    url = show_url_from_name(show['details']['name'])
     if not url:
         return None
 

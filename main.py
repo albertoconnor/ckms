@@ -44,7 +44,7 @@ def trim_history(history):
         readable=True,
     )
 )
-@click.option('--schedule-url', default='https://radiowaterloo.ca/wp-content/uploads/week-info.json')
+@click.option('--schedule-url', default='http://192.168.2.151/api/week-info/')
 @click.option('--schedule-path', default='schedules')
 @click.option('--history_path', default='history.json')
 def cli(record_path, schedule_url, schedule_path, history_path):
